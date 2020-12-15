@@ -4,12 +4,12 @@ import Appointment from '../models/Appointment';
 import AppointmentsRepository from '../repositories/AppointmentsRepository';
 
 interface Request {
-  provider: string;
+  provider_id: string;
   date: Date;
 }
 
 class CreateAppointmentService {
-  public async execute({ date, provider }: Request): Promise<Appointment> {
+  public async execute({ date, provider_id }: Request): Promise<Appointment> {
     const appointmentRepository = getCustomRepository(AppointmentsRepository);
     const appointmentDate = startOfHour(date);
     const findAppointmendInSameTime = await appointmentRepository.findDate(
@@ -19,7 +19,7 @@ class CreateAppointmentService {
       throw new Error('Date is already booked');
     }
     const appointment = await appointmentRepository.create({
-      provider,
+      provider_id,
       date: appointmentDate,
     });
     await appointmentRepository.save(appointment);
