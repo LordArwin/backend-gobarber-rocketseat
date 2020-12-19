@@ -2,6 +2,8 @@ import { compare } from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 import { getRepository } from 'typeorm';
 import User from '../models/User';
+import config from '../config/auth';
+import AppError from '../errors/AppError';
 
 interface Request {
   email: string;
@@ -16,15 +18,16 @@ class AuthSessionService {
     const usersRepo = getRepository(User);
     const user = await usersRepo.findOne({ where: { email } });
     if (!user) {
-      throw new Error('Email and Password invalid!');
+      throw new AppError('Email and Password invalid!', 401);
     }
     const pass = await compare(password, user.password);
     if (!pass) {
-      throw new Error('Email and Password invalid!');
+      throw new AppError('Email and Password invalid!', 401);
     }
-    const token = sign({}, 'da4936b9c55de6ecbf06ebff0ce03ed6', {
+    const { secret, expiresIn } = config.jwt;
+    const token = sign({}, secret, {
       subject: user.id,
-      expiresIn: '1d',
+      expiresIn,
     });
     return { user, token };
   }
